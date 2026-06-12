@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Activation Builder — bLinkup</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    color: #111;
+    background: #fff;
+    line-height: 1.5;
+  }
+
+  .topnav {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    padding: 0 32px;
+    border-bottom: 1px solid #e5e5e5;
+    height: 52px;
+    background: #fff;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .topnav-brand { font-weight: 700; font-size: 14px; color: #111; white-space: nowrap; margin-right: 4px; }
+  .topnav a { color: #444; text-decoration: none; font-size: 13.5px; white-space: nowrap; }
+  .topnav a:hover { color: #000; }
+  .topnav-spacer { flex: 1; }
+  .topnav-badge { background: #e53e3e; color: #fff; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 4px; }
+
+  .page { max-width: 800px; margin: 0 auto; padding: 48px 32px 100px; }
+  .page-super { font-size: 13px; color: #888; margin-bottom: 6px; }
+  .page-title { font-size: 36px; font-weight: 800; letter-spacing: -0.5px; display: flex; align-items: baseline; gap: 20px; flex-wrap: wrap; margin-bottom: 36px; }
+  .page-title-tabs { display: flex; gap: 20px; }
+  .page-title-tab { font-size: 16px; font-weight: 400; color: #888; cursor: pointer; padding-bottom: 2px; }
+  .page-title-tab:hover { color: #333; }
+  .page-title-tab.active { color: #111; font-weight: 600; border-bottom: 2px solid #111; }
+
+  /* Activation container */
+  .activation { border-bottom: 1px solid #e8e8e8; padding-bottom: 52px; margin-bottom: 52px; }
+  .activation:last-child { border-bottom: none; }
+  .activation-header { margin-bottom: 24px; }
+  .activation-label { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #aaa; margin-bottom: 6px; }
+  .activation-title { font-size: 24px; font-weight: 700; color: #111; margin-bottom: 8px; }
+  .activation-desc { font-size: 14px; color: #555; line-height: 1.65; max-width: 640px; }
+
+  /* Callout boxes */
+  .sponsor-callout {
+    background: #fafafa;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    padding: 20px 20px 4px;
+    margin-bottom: 28px;
+  }
+  .sdk-callout {
+    background: #f0f7ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 8px;
+    padding: 20px 20px 4px;
+    margin-bottom: 28px;
+  }
+  .notif-callout {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 20px 20px 4px;
+    margin-bottom: 28px;
+  }
+  .callout-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.8px;
+    text-transform: uppercase; margin-bottom: 16px;
+  }
+  .callout-label.grey { color: #999; }
+  .callout-label.blue { color: #3b82f6; }
+  .callout-label.dark { color: #555; }
+
+  /* Fields */
+  .field { margin-bottom: 18px; }
+  .field-label { display: block; font-size: 14px; font-weight: 600; color: #111; margin-bottom: 7px; }
+  .field-label-sm { display: block; font-size: 13px; font-weight: 600; color: #555; margin-bottom: 6px; }
+  .field-hint { font-size: 12px; color: #999; margin-top: 5px; line-height: 1.45; }
+  .char-guide { font-size: 11.5px; color: #bbb; float: right; }
+
+  select, input[type="text"], input[type="number"], input[type="datetime-local"], textarea {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #111;
+    background: #fff;
+    font-family: inherit;
+    appearance: none;
+    -webkit-appearance: none;
+    outline: none;
+  }
+  select:focus, input:focus, textarea:focus { border-color: #111; box-shadow: 0 0 0 3px rgba(0,0,0,0.06); }
+  select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
+  textarea { resize: vertical; min-height: 68px; line-height: 1.5; }
+  input[type="datetime-local"] { color-scheme: light; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+  /* Color row */
+  .color-row { display: flex; align-items: center; gap: 8px; }
+  input[type="color"] { width: 36px; height: 36px; padding: 2px; border-radius: 6px; border: 1px solid #d1d5db; cursor: pointer; flex-shrink: 0; }
+
+  /* Upload */
+  .upload-box {
+    border: 1.5px dashed #d1d5db;
+    border-radius: 6px;
+    padding: 14px 12px;
+    text-align: center;
+    color: #999;
+    font-size: 12.5px;
+    cursor: pointer;
+  }
+  .upload-box:hover { border-color: #999; color: #555; }
+  .upload-box strong { display: block; font-size: 13px; color: #333; margin-bottom: 2px; }
+
+  /* Options / radios */
+  .options { border: 1px solid #d1d5db; border-radius: 6px; overflow: hidden; }
+  .option { display: flex; align-items: flex-start; gap: 12px; padding: 11px 14px; background: #fff; border-bottom: 1px solid #f0f0f0; }
+  .option:last-child { border-bottom: none; }
+  .option.selected { background: #f7f7f7; }
+  .option input[type="radio"] { width: 15px; height: 15px; margin-top: 2px; flex-shrink: 0; accent-color: #111; }
+  .option-label { font-size: 14px; font-weight: 500; color: #111; }
+  .option-desc { font-size: 12.5px; color: #777; margin-top: 2px; line-height: 1.5; }
+
+  .indent { border-left: 2px solid #e0e0e0; padding-left: 20px; margin-top: 12px; }
+
+  /* Toggle */
+  .toggle-field { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; padding: 11px 14px; border: 1px solid #d1d5db; border-radius: 6px; margin-bottom: 8px; }
+  .toggle-field-label { font-size: 14px; font-weight: 500; color: #111; }
+  .toggle-field-desc { font-size: 12.5px; color: #777; margin-top: 2px; }
+  .toggle { width: 38px; height: 22px; background: #d1d5db; border-radius: 11px; position: relative; flex-shrink: 0; margin-top: 2px; }
+  .toggle.on { background: #111; }
+  .toggle::after { content: ''; position: absolute; width: 16px; height: 16px; background: #fff; border-radius: 50%; top: 3px; left: 3px; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+  .toggle.on::after { left: 19px; }
+
+  .section-divider { font-size: 11px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: #bbb; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid #f0f0f0; }
+
+  /* Add another instance */
+  .add-another {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: -28px;
+    margin-bottom: 52px;
+    padding: 11px 16px;
+    border: 1.5px dashed #d1d5db;
+    border-radius: 8px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #555;
+    cursor: pointer;
+    background: #fff;
+    width: 100%;
+    text-align: left;
+    font-family: inherit;
+  }
+  .add-another:hover { border-color: #999; color: #111; background: #fafafa; }
+  .add-another-icon { font-size: 18px; font-weight: 400; color: #aaa; line-height: 1; }
+
+  /* Enable / disable toggle */
+  .enable-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 13px 16px;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    background: #fafafa;
+    margin-bottom: 24px;
+  }
+  .enable-question { font-size: 14px; font-weight: 600; color: #111; }
+  .yn-group { display: flex; border: 1px solid #d1d5db; border-radius: 6px; overflow: hidden; }
+  .yn-btn {
+    padding: 6px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    background: #fff;
+    color: #888;
+    font-family: inherit;
+  }
+  .yn-btn + .yn-btn { border-left: 1px solid #d1d5db; }
+  .yn-btn.active { background: #111; color: #fff; }
+
+  /* Collapsed state — hide everything except header + enable row */
+  .activation.collapsed > *:not(.activation-header):not(.enable-row) {
+    display: none;
+  }
+
+  .badge { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 0.3px; text-transform: uppercase; padding: 2px 7px; border-radius: 3px; vertical-align: middle; margin-left: 5px; }
+  .badge-sdk { background: #e0f2fe; color: #075985; }
+
+  /* Event list */
+  .event-list-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .select-all-label {
+    font-size: 12.5px;
+    color: #555;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+  }
+  .select-all-label input { accent-color: #111; }
+  .event-grid {
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .event-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 14px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 13.5px;
+    color: #222;
+  }
+  .event-row:last-child { border-bottom: none; }
+  .event-row.checked { background: #f7f7f7; }
+  .event-row input[type="checkbox"] { accent-color: #111; flex-shrink: 0; }
+  .event-row-name { flex: 1; font-weight: 500; }
+  .event-row-date { font-size: 12.5px; color: #888; white-space: nowrap; }
+  .home-badge {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.4px; text-transform: uppercase;
+    padding: 2px 7px; border-radius: 3px;
+    background: #111; color: #fff;
+    flex-shrink: 0;
+  }
+  .away-badge {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.4px; text-transform: uppercase;
+    padding: 2px 7px; border-radius: 3px;
+    background: #f0f0f0; color: #888;
+    flex-shrink: 0;
+  }
+
+  /* Push fields */
+  .push-fields { display: flex; flex-direction: column; gap: 14px; }
+
+  /* Collapsible sections */
+  .collapsible-header {
+    cursor: pointer; user-select: none; display: flex; align-items: center; justify-content: space-between;
+  }
+  .collapsible-header::after { content: '▴'; font-size: 10px; color: #aaa; margin-left: 6px; }
+  .section-collapsed .collapsible-header::after { content: '▾'; }
+  .sdk-callout.section-collapsed > *:not(.callout-label),
+  .notif-callout.section-collapsed > *:not(.callout-label),
+  .sponsor-callout.section-collapsed > *:not(.callout-label),
+  .events-section.section-collapsed > *:not(.section-divider) { display: none; }
+
+  .save-btn {
+    background: #111; color: #fff;
+    font-size: 13.5px; font-weight: 700;
+    padding: 10px 20px;
+    border: none; border-radius: 7px;
+    cursor: pointer; font-family: inherit;
+    white-space: nowrap; flex-shrink: 0;
+    margin-top: 6px;
+  }
+  .save-btn:hover { background: #333; }
+
+  /* Dev notes */
+  .dev-notes {
+    margin-top: 48px;
+    padding: 24px;
+    background: #fafafa;
+    border: 1px solid #e5e5e5;
+    border-radius: 10px;
+  }
+  .dev-notes-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: #aaa; margin-bottom: 16px; }
+  .dev-note { display: flex; gap: 14px; margin-bottom: 16px; font-size: 13.5px; }
+  .dev-note:last-child { margin-bottom: 0; }
+  .dev-note-num { font-weight: 800; color: #111; flex-shrink: 0; width: 18px; }
+  .dev-note-body { color: #444; line-height: 1.6; }
+  .dev-note-body strong { color: #111; }
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <span class="topnav-brand">Blinkup Connect SDK</span>
+  <a href="#">Settings</a>
+  <a href="#">Events</a>
+  <a href="#">Spots</a>
+  <a href="#" class="active">Activations</a>
+  <a href="#">Webhooks</a>
+  <a href="GameDay.html">Game Day</a>
+  <div class="topnav-spacer"></div>
+</nav>
+
+<div class="page">
+
+  <div class="page-super">Activations</div>
+  <div class="page-title-row" style="display:flex;align-items:flex-start;justify-content:space-between;gap:24px;margin-bottom:32px;">
+    <div>
+      <div class="page-title" style="margin-bottom:0;">
+        Activation Builder
+        <div class="page-title-tabs">
+          <span class="page-title-tab active">Configuration</span>
+          <span class="page-title-tab">Events</span>
+          <span class="page-title-tab">History</span>
+        </div>
+      </div>
+    </div>
+    <button class="save-btn" id="save-btn" onclick="saveConfig()">Save &amp; Publish to Game Day</button>
+  </div>
+  <div id="save-confirm" style="display:none;margin-top:10px;font-size:13px;color:#22c55e;font-weight:600;">✓ Configuration saved. Open Game Day to send activations.</div>
+
+
+  <!-- ══════════════════════════════
+       1. BAR OF THE GAME
+  ══════════════════════════════ -->
+  <div class="activation" id="botg">
+    <div class="activation-header">
+      <div class="activation-label">Activation Type 1</div>
+      <div class="activation-title">Bar of the Game</div>
+      <div class="activation-desc">One bar or meetup spot is selected per event. Every fan with confirmed presence at that location wins.</div>
+    </div>
+
+    <div class="enable-row">
+      <span class="enable-question">Include this activation?</span>
+      <div class="yn-group">
+        <button class="yn-btn active">Yes</button>
+        <button class="yn-btn">No</button>
+      </div>
+    </div>
+
+    <!-- Sponsor -->
+    <div class="sponsor-callout">
+      <div class="callout-label grey">Sponsor</div>
+      <div class="two-col" style="margin-bottom:18px;">
+        <div class="field"><label class="field-label-sm">Sponsor name</label><input type="text" value="Labatt Blue" /></div>
+        <div class="field"><label class="field-label-sm">Sponsor logo</label><div class="upload-box"><strong>Upload logo</strong>PNG or SVG · transparent background</div></div>
+      </div>
+      <div class="field"><label class="field-label-sm">Sponsor color</label><div class="color-row"><input type="color" value="#002654" /><input type="text" value="#002654" /></div></div>
+    </div>
+
+    <!-- SDK Display -->
+    <div class="sdk-callout">
+      <div class="callout-label blue">SDK Display</div>
+      <div class="field"><label class="field-label-sm">Activation name</label><input type="text" value="Bar of the Game" /><div class="field-hint">Shown as the headline on the card and detail screen.</div></div>
+      <div class="field">
+        <label class="field-label-sm">Short instructions <span class="char-guide">5–7 words</span></label>
+        <input type="text" value="Be at the winning bar tonight" />
+        <div class="field-hint">Appears below the title on the activation card.</div>
+      </div>
+      <div class="field">
+        <label class="field-label-sm">Instructions</label>
+        <textarea>Check in at any partner bar during the game. If your bar is selected as Bar of the Game, every confirmed fan wins a free round on Labatt Blue.</textarea>
+        <div class="field-hint">1–2 sentences shown on the prize detail screen.</div>
+      </div>
+      <div class="field"><label class="field-label-sm">Prize</label><input type="text" value="Free Round of Labatt Blue" /></div>
+      <div class="field"><label class="field-label-sm">Prize redemption link</label><input type="text" value="https://" /><div class="field-hint">External link delivered to winners.</div></div>
+      <div class="field"><label class="field-label-sm">CTA button label</label><input type="text" value="Claim My Free Round" /></div>
+    </div>
+
+    <!-- Push Notifications -->
+    <div class="notif-callout">
+      <div class="callout-label dark">Push Notifications</div>
+      <div class="push-fields">
+        <div class="field"><label class="field-label-sm">Prior — while activation is upcoming</label><textarea style="min-height:52px;">🏒 Bar of the Game is live tonight. Check in at a partner bar to qualify for a free round!</textarea></div>
+        <div class="field"><label class="field-label-sm">Winning — sent to fans at the winning bar</label><textarea style="min-height:52px;">🎉 You're at the Bar of the Game! Show this to your bartender to claim your free Labatt Blue.</textarea></div>
+        <div class="field"><label class="field-label-sm">After — once the activation has ended</label><textarea style="min-height:52px;">Tonight's Bar of the Game has closed. Stay checked in at future games for your next chance to win.</textarea></div>
+      </div>
+    </div>
+
+    <!-- Events -->
+    <div class="field">
+      <div class="section-divider">Events</div>
+      <div class="event-list-header">
+        <label class="field-label" style="margin-bottom:0;">Which events should this run for?</label>
+        <label class="select-all-label"><input type="checkbox" checked /> Select all</label>
+      </div>
+      <div class="event-grid" data-grid="1"></div>
+    </div>
+
+    <!-- Trigger -->
+    <div class="field">
+      <div class="section-divider">Trigger</div>
+      <label class="field-label">When does this activation fire?</label>
+      <div class="options">
+        <div class="option selected">
+          <input type="radio" name="botg-trigger" checked />
+          <div>
+            <div class="option-label">Manual</div>
+            <div class="option-desc">Admin fires it manually from the portal. Takes effect immediately with no countdown.</div>
+          </div>
+        </div>
+        <div class="option">
+          <input type="radio" name="botg-trigger" />
+          <div>
+            <div class="option-label">Scheduled time</div>
+            <div class="option-desc">Set an exact date and time. Fans see a live countdown leading up to it. Fires automatically.</div>
+            <div class="indent" style="margin-top:10px; margin-bottom:6px;">
+              <div class="field"><label class="field-label-sm">Date &amp; time</label><input type="datetime-local" value="2025-10-10T19:00" /></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bar Selection -->
+    <div class="field">
+      <div class="section-divider">Bar Selection</div>
+      <label class="field-label">How is the winning bar chosen?</label>
+      <div class="options">
+        <div class="option selected"><input type="radio" name="botg-method" value="random" checked /><div><div class="option-label">Random</div><div class="option-desc">A qualifying bar is selected at random from the active network.</div></div></div>
+        <div class="option"><input type="radio" name="botg-method" value="manual" /><div><div class="option-label">Manual — choose a specific bar</div><div class="option-desc">You select the bar from your network list before each event.</div></div></div>
+        <div class="option"><input type="radio" name="botg-method" value="usage" /><div><div class="option-label">Usage-Based</div><div class="option-desc">System weights selection by bar activity (check-ins, redemptions).</div></div></div>
+      </div>
+    </div>
+  </div>
+  <button class="add-another" onclick="return false;"><span class="add-another-icon">+</span> Add another Bar of the Game activation</button>
+
+
+  <!-- ══════════════════════════════
+       2. STAT TRIGGER DEAL
+  ══════════════════════════════ -->
+  <div class="activation" id="stat">
+    <div class="activation-header">
+      <div class="activation-label">Activation Type 2</div>
+      <div class="activation-title">Stat Trigger Deal</div>
+      <div class="activation-desc">When an admin fires the trigger, all fans currently checked in at eligible locations win the deal.</div>
+    </div>
+
+    <div class="enable-row">
+      <span class="enable-question">Include this activation?</span>
+      <div class="yn-group">
+        <button class="yn-btn active">Yes</button>
+        <button class="yn-btn">No</button>
+      </div>
+    </div>
+
+    <div class="sponsor-callout">
+      <div class="callout-label grey">Sponsor</div>
+      <div class="two-col" style="margin-bottom:18px;">
+        <div class="field"><label class="field-label-sm">Sponsor name</label><input type="text" value="Labatt Blue" /></div>
+        <div class="field"><label class="field-label-sm">Sponsor logo</label><div class="upload-box"><strong>Upload logo</strong>PNG or SVG · transparent background</div></div>
+      </div>
+      <div class="field"><label class="field-label-sm">Sponsor color</label><div class="color-row"><input type="color" value="#002654" /><input type="text" value="#002654" /></div></div>
+    </div>
+
+    <div class="sdk-callout">
+      <div class="callout-label blue">SDK Display</div>
+      <div class="field"><label class="field-label-sm">Activation name</label><input type="text" value="Power Play Deal" /></div>
+      <div class="field">
+        <label class="field-label-sm">Short instructions <span class="char-guide">5–7 words</span></label>
+        <input type="text" value="Score on the power play, everyone wins" />
+      </div>
+      <div class="field">
+        <label class="field-label-sm">Instructions</label>
+        <textarea>Stay checked in at the arena or a partner bar. If the Sabres score on the power play, every confirmed fan wins a $3 Labatt draft.</textarea>
+      </div>
+      <div class="field"><label class="field-label-sm">Prize</label><input type="text" value="$3 Labatt Blue Draft" /></div>
+      <div class="field"><label class="field-label-sm">Prize redemption link</label><input type="text" value="https://" /></div>
+      <div class="field"><label class="field-label-sm">CTA button label</label><input type="text" value="Claim My Deal" /></div>
+    </div>
+
+    <div class="notif-callout">
+      <div class="callout-label dark">Push Notifications</div>
+      <div class="push-fields">
+        <div class="field"><label class="field-label-sm">Prior — while activation is upcoming</label><textarea style="min-height:52px;">⚡ Power Play Deal is active tonight. Stay checked in — a Sabres power play goal unlocks a $3 Labatt Draft for everyone!</textarea></div>
+        <div class="field"><label class="field-label-sm">Winning — sent when the trigger fires</label><textarea style="min-height:52px;">🏒 Power Play Goal! Your $3 Labatt Blue Draft just unlocked. Tap to claim.</textarea></div>
+        <div class="field"><label class="field-label-sm">After — once the activation has ended</label><textarea style="min-height:52px;">Tonight's Power Play Deal has closed. Check in at the next game for another chance to win.</textarea></div>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="section-divider">Events</div>
+      <div class="event-list-header">
+        <label class="field-label" style="margin-bottom:0;">Which events should this run for?</label>
+        <label class="select-all-label"><input type="checkbox" checked /> Select all</label>
+      </div>
+      <div class="event-grid" data-grid="1"></div>
+    </div>
+
+    <div class="field">
+      <div class="section-divider">Eligible Locations</div>
+      <div class="toggle-field"><div><div class="toggle-field-label">In-Stadium</div><div class="toggle-field-desc">Fans confirmed inside the arena qualify.</div></div><div class="toggle on"></div></div>
+      <div class="toggle-field"><div><div class="toggle-field-label">Partner Bars</div><div class="toggle-field-desc">Fans at watch party bars qualify.</div></div><div class="toggle on"></div></div>
+    </div>
+
+  </div>
+  <button class="add-another" onclick="return false;"><span class="add-another-icon">+</span> Add another Stat Trigger Deal activation</button>
+
+
+  <!-- ══════════════════════════════
+       3. FAN OF THE GAME
+  ══════════════════════════════ -->
+  <div class="activation" id="fotg">
+    <div class="activation-header">
+      <div class="activation-label">Activation Type 3</div>
+      <div class="activation-title">Fan of the Game</div>
+      <div class="activation-desc">One fan with confirmed presence wins. Selection can be random or based on a measurable behavior such as invitations sent.</div>
+    </div>
+
+    <div class="enable-row">
+      <span class="enable-question">Include this activation?</span>
+      <div class="yn-group">
+        <button class="yn-btn active">Yes</button>
+        <button class="yn-btn">No</button>
+      </div>
+    </div>
+
+    <div class="sponsor-callout">
+      <div class="callout-label grey">Sponsor</div>
+      <div class="two-col" style="margin-bottom:18px;">
+        <div class="field"><label class="field-label-sm">Sponsor name</label><input type="text" value="Labatt Blue" /></div>
+        <div class="field"><label class="field-label-sm">Sponsor logo</label><div class="upload-box"><strong>Upload logo</strong>PNG or SVG · transparent background</div></div>
+      </div>
+      <div class="field"><label class="field-label-sm">Sponsor color</label><div class="color-row"><input type="color" value="#002654" /><input type="text" value="#002654" /></div></div>
+    </div>
+
+    <div class="sdk-callout">
+      <div class="callout-label blue">SDK Display</div>
+      <div class="field"><label class="field-label-sm">Activation name</label><input type="text" value="Fan of the Game" /></div>
+      <div class="field">
+        <label class="field-label-sm">Short instructions <span class="char-guide">5–7 words</span></label>
+        <input type="text" value="One lucky fan wins big tonight" />
+      </div>
+      <div class="field">
+        <label class="field-label-sm">Instructions</label>
+        <textarea>Check in at the arena or a partner bar and you're automatically entered. One lucky fan wins the prize at the end of the game.</textarea>
+      </div>
+      <div class="field"><label class="field-label-sm">Prize</label><input type="text" value="$100 Labatt Blue Bar Tab" /></div>
+      <div class="field"><label class="field-label-sm">Prize redemption link</label><input type="text" value="https://" /></div>
+      <div class="field"><label class="field-label-sm">CTA button label</label><input type="text" value="Claim My Prize" /></div>
+    </div>
+
+    <div class="notif-callout">
+      <div class="callout-label dark">Push Notifications</div>
+      <div class="push-fields">
+        <div class="field"><label class="field-label-sm">Prior — while activation is upcoming</label><textarea style="min-height:52px;">🎯 Fan of the Game draw is tonight. Check in to enter — one fan wins a $100 Labatt bar tab!</textarea></div>
+        <div class="field"><label class="field-label-sm">Winning — sent to the winner</label><textarea style="min-height:52px;">🏆 YOU'RE TONIGHT'S FAN OF THE GAME! Tap to claim your $100 Labatt Blue bar tab.</textarea></div>
+        <div class="field"><label class="field-label-sm">After — once the draw has closed</label><textarea style="min-height:52px;">Tonight's Fan of the Game draw has closed. Check in at the next game for your next chance to win.</textarea></div>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="section-divider">Events</div>
+      <div class="event-list-header">
+        <label class="field-label" style="margin-bottom:0;">Which events should this run for?</label>
+        <label class="select-all-label"><input type="checkbox" checked /> Select all</label>
+      </div>
+      <div class="event-grid" data-grid="1"></div>
+    </div>
+
+    <div class="field">
+      <div class="section-divider">Trigger</div>
+      <label class="field-label">When does this activation fire?</label>
+      <div class="options">
+        <div class="option selected">
+          <input type="radio" name="fotg-trigger" checked />
+          <div>
+            <div class="option-label">Manual</div>
+            <div class="option-desc">Admin fires it manually from the portal. Draw runs immediately with no countdown.</div>
+          </div>
+        </div>
+        <div class="option">
+          <input type="radio" name="fotg-trigger" />
+          <div>
+            <div class="option-label">Scheduled time</div>
+            <div class="option-desc">Set an exact date and time. Fans see a live countdown. Draw runs automatically.</div>
+            <div class="indent" style="margin-top:10px; margin-bottom:6px;">
+              <div class="field"><label class="field-label-sm">Date &amp; time</label><input type="datetime-local" value="2025-10-10T22:00" /></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="section-divider">Winner Selection</div>
+      <label class="field-label">How is the fan chosen?</label>
+      <div class="options">
+        <div class="option selected"><input type="radio" name="fotg-method" value="random" checked /><div><div class="option-label">Random</div><div class="option-desc">One fan is randomly drawn from all qualifying attendees.</div></div></div>
+        <div class="option"><input type="radio" name="fotg-method" value="invitations" /><div><div class="option-label">Behavior-Based — most invitations sent</div><div class="option-desc">Fan who invited the most people wins.</div></div></div>
+        <div class="option"><input type="radio" name="fotg-method" value="redemptions" /><div><div class="option-label">Behavior-Based — most deals redeemed</div><div class="option-desc">Fan with the highest redemption count wins.</div></div></div>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="section-divider">Eligible Locations</div>
+      <div class="toggle-field"><div><div class="toggle-field-label">In-Stadium</div></div><div class="toggle on"></div></div>
+      <div class="toggle-field"><div><div class="toggle-field-label">Partner Bars</div></div><div class="toggle on"></div></div>
+    </div>
+  </div>
+  <button class="add-another" onclick="return false;"><span class="add-another-icon">+</span> Add another Fan of the Game activation</button>
+
+
+  <!-- ══════════════════════════════
+       4. TIME-BASED PRIZING
+  ══════════════════════════════ -->
+  <div class="activation" id="time">
+    <div class="activation-header">
+      <div class="activation-label">Activation Type 4</div>
+      <div class="activation-title">Time-Based Prizing</div>
+      <div class="activation-desc">Any fan confirmed present at a specific point in time qualifies. Geofence window maximum is 30 minutes.</div>
+    </div>
+
+    <div class="enable-row">
+      <span class="enable-question">Include this activation?</span>
+      <div class="yn-group">
+        <button class="yn-btn active">Yes</button>
+        <button class="yn-btn">No</button>
+      </div>
+    </div>
+
+    <div class="sponsor-callout">
+      <div class="callout-label grey">Sponsor</div>
+      <div class="two-col" style="margin-bottom:18px;">
+        <div class="field"><label class="field-label-sm">Sponsor name</label><input type="text" value="Labatt Blue" /></div>
+        <div class="field"><label class="field-label-sm">Sponsor logo</label><div class="upload-box"><strong>Upload logo</strong>PNG or SVG · transparent background</div></div>
+      </div>
+      <div class="field"><label class="field-label-sm">Sponsor color</label><div class="color-row"><input type="color" value="#002654" /><input type="text" value="#002654" /></div></div>
+    </div>
+
+    <div class="sdk-callout">
+      <div class="callout-label blue">SDK Display</div>
+      <div class="field"><label class="field-label-sm">Activation name</label><input type="text" value="Early Arrival Deal" /></div>
+      <div class="field">
+        <label class="field-label-sm">Short instructions <span class="char-guide">5–7 words</span></label>
+        <input type="text" value="Be one of the first 100 fans" />
+      </div>
+      <div class="field">
+        <label class="field-label-sm">Instructions</label>
+        <textarea>Check in at the arena or a partner bar before puck drop. The first 100 fans checked in win a free Labatt Draft, on us.</textarea>
+      </div>
+      <div class="field"><label class="field-label-sm">Prize</label><input type="text" value="Free Labatt Blue Draft" /></div>
+      <div class="field"><label class="field-label-sm">Prize redemption link</label><input type="text" value="https://" /></div>
+      <div class="field"><label class="field-label-sm">CTA button label</label><input type="text" value="Claim My Free Draft" /></div>
+    </div>
+
+    <div class="notif-callout">
+      <div class="callout-label dark">Push Notifications</div>
+      <div class="push-fields">
+        <div class="field"><label class="field-label-sm">Prior — while activation is upcoming</label><textarea style="min-height:52px;">🍺 Early Arrival Deal is tonight. Be one of the first 100 fans checked in to win a free Labatt Draft!</textarea></div>
+        <div class="field"><label class="field-label-sm">Winning — sent to qualifying fans</label><textarea style="min-height:52px;">🎉 You made it early! Your free Labatt Blue Draft is ready to claim. Tap to redeem.</textarea></div>
+        <div class="field"><label class="field-label-sm">After — once the window has closed</label><textarea style="min-height:52px;">The Early Arrival window has closed for tonight. Check in early at the next game to win!</textarea></div>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="section-divider">Events</div>
+      <div class="event-list-header">
+        <label class="field-label" style="margin-bottom:0;">Which events should this run for?</label>
+        <label class="select-all-label"><input type="checkbox" checked /> Select all</label>
+      </div>
+      <div class="event-grid" data-grid="1"></div>
+    </div>
+
+    <div class="field">
+      <div class="section-divider">Eligible Locations</div>
+      <div class="toggle-field"><div><div class="toggle-field-label">In-Stadium</div></div><div class="toggle on"></div></div>
+      <div class="toggle-field"><div><div class="toggle-field-label">Partner Bars</div></div><div class="toggle"></div></div>
+    </div>
+
+    <div class="field">
+      <div class="section-divider">Winner Qualification</div>
+      <label class="field-label">Who qualifies to win?</label>
+      <div class="options">
+        <div class="option selected">
+          <input type="radio" name="time-method" checked />
+          <div>
+            <div class="option-label">First N fans checked in</div>
+            <div class="option-desc">The first fans to check in win. Admin sends the activation manually from Game Day once the threshold is reached.</div>
+            <div class="indent" style="margin-top:10px; margin-bottom:6px;">
+              <div class="field">
+                <label class="field-label-sm">Number of winners</label>
+                <input type="number" value="100" min="1" style="width:100px;" />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="option">
+          <input type="radio" name="time-method" />
+          <div>
+            <div class="option-label">All fans checked in before a deadline</div>
+            <div class="option-desc">Every fan confirmed present before the cutoff time qualifies. Fires automatically at the set time.</div>
+            <div class="indent" style="margin-top:10px; margin-bottom:6px;">
+              <div class="field">
+                <label class="field-label-sm">Deadline</label>
+                <input type="datetime-local" value="2025-10-10T19:00" />
+                <div class="field-hint">Geofence window max: 30 minutes.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <button class="add-another" onclick="return false;"><span class="add-another-icon">+</span> Add another Time-Based Prizing activation</button>
+
+  <div style="margin-top:40px;padding-top:32px;border-top:1px solid #e5e5e5;display:flex;align-items:center;gap:16px;">
+    <button class="save-btn" onclick="saveConfig()">Save &amp; Publish to Game Day</button>
+    <div id="save-confirm-bottom" style="display:none;font-size:13px;color:#22c55e;font-weight:600;">✓ Saved. Open Game Day to send activations.</div>
+  </div>
+
+</div>
+
+<script>
+  // ── Save configuration ───────────────────────────────────
+  function saveConfig() {
+    const saved = [];
+    document.querySelectorAll('.activation').forEach(el => {
+      if (el.classList.contains('collapsed')) return;
+
+      const sdkInputs = el.querySelectorAll('.sdk-callout input[type="text"]');
+      const name      = sdkInputs[0] ? sdkInputs[0].value.trim() : el.querySelector('.activation-title')?.textContent.trim();
+      const prize     = sdkInputs[2] ? sdkInputs[2].value.trim() : '';
+
+      const typeId = el.id.replace(/-\d+$/, '');
+
+      // Time-Based Prizing uses winner qualification instead of a trigger radio
+      if (typeId === 'time') {
+        const timeRadio  = el.querySelector('input[type="radio"][name*="time-method"]:checked');
+        const timeOption = timeRadio ? timeRadio.closest('.option') : null;
+        const timeLabel  = timeOption ? timeOption.querySelector('.option-label')?.textContent.trim() : '';
+        const isFirstN   = timeLabel.toLowerCase().startsWith('first');
+
+        let scheduledTime = null;
+        let winnerCount   = null;
+        if (isFirstN) {
+          const numInput = timeOption.querySelector('input[type="number"]');
+          winnerCount = numInput ? parseInt(numInput.value, 10) : 100;
+        } else {
+          const dt = timeOption ? timeOption.querySelector('input[type="datetime-local"]') : null;
+          scheduledTime = dt ? dt.value : null;
+        }
+
+        const timeToggles = el.querySelectorAll('.toggle-field .toggle');
+        const eligibleStadium = timeToggles[0] ? timeToggles[0].classList.contains('on') : true;
+        const eligibleBars    = timeToggles[1] ? timeToggles[1].classList.contains('on') : false;
+        saved.push({ id: el.id, typeId, name, prize, isInstant: isFirstN, scheduledTime, winnerCount, eligibleStadium, eligibleBars });
+        return;
+      }
+
+      // Stat Trigger is always instant — also save eligible locations
+      if (typeId === 'stat') {
+        const toggles = el.querySelectorAll('.toggle-field .toggle');
+        const eligibleStadium = toggles[0] ? toggles[0].classList.contains('on') : true;
+        const eligibleBars    = toggles[1] ? toggles[1].classList.contains('on') : true;
+        saved.push({ id: el.id, typeId, name, prize, isInstant: true, scheduledTime: null, eligibleStadium, eligibleBars });
+        return;
+      }
+
+      // Bar of the Game + Fan of the Game — read trigger radio
+      const triggerRadio  = el.querySelector('input[type="radio"][name*="trigger"]:checked');
+      const triggerOption = triggerRadio ? triggerRadio.closest('.option') : null;
+      const triggerLabel  = triggerOption ? triggerOption.querySelector('.option-label')?.textContent.trim() : '';
+      const isScheduled   = triggerLabel.toLowerCase().startsWith('scheduled');
+
+      let scheduledTime = null;
+      if (isScheduled) {
+        const dt = el.querySelector('input[type="datetime-local"]');
+        scheduledTime = dt ? dt.value : null;
+      }
+
+      // Bar of the Game — also save bar selection method
+      let barMethod = null;
+      if (typeId === 'botg') {
+        const barRadio = el.querySelector('input[type="radio"][name*="botg-method"]:checked');
+        barMethod = barRadio ? barRadio.value : 'random';
+      }
+
+      // Fan of the Game — save fan selection method
+      let fanMethod = null;
+      if (typeId === 'fotg') {
+        const fanRadio = el.querySelector('input[type="radio"][name*="fotg-method"]:checked');
+        fanMethod = fanRadio ? fanRadio.value : 'random';
+      }
+
+      saved.push({ id: el.id, typeId, name, prize, isInstant: !isScheduled, scheduledTime, barMethod, fanMethod });
+    });
+
+    localStorage.setItem('blinkup_activations', JSON.stringify(saved));
+
+    ['save-confirm', 'save-confirm-bottom'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.style.display = 'block';
+    });
+
+    setTimeout(() => { window.location.href = 'GameDay.html'; }, 1200);
+  }
+
+  // ── Tab nav ──────────────────────────────────────────────
+  document.querySelectorAll('.page-title-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.page-title-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+    });
+  });
+
+  // ── Event schedule (single source of truth) ──────────────
+  const EVENTS = [
+    { name: 'Toronto Maple Leafs', date: 'Oct 10',  home: true  },
+    { name: 'New York Rangers',    date: 'Oct 13',  home: false },
+    { name: 'Detroit Red Wings',   date: 'Oct 17',  home: true  },
+    { name: 'Ottawa Senators',     date: 'Oct 21',  home: false },
+    { name: 'New Jersey Devils',   date: 'Oct 25',  home: true  },
+    { name: 'Boston Bruins',       date: 'Oct 28',  home: false },
+    { name: 'Pittsburgh Penguins', date: 'Nov 1',   home: true  },
+    { name: 'Philadelphia Flyers', date: 'Nov 4',   home: false },
+    { name: 'Carolina Hurricanes', date: 'Nov 8',   home: true  },
+    { name: 'Montreal Canadiens',  date: 'Nov 12',  home: false },
+    { name: 'Washington Capitals', date: 'Nov 15',  home: true  },
+    { name: 'Florida Panthers',    date: 'Nov 19',  home: false },
+    { name: 'Tampa Bay Lightning', date: 'Nov 22',  home: true  },
+    { name: 'Boston Bruins',       date: 'Nov 26',  home: false },
+    { name: 'Minnesota Wild',      date: 'Nov 29',  home: true  },
+    { name: 'Colorado Avalanche',  date: 'Dec 3',   home: false },
+    { name: 'Vegas Golden Knights',date: 'Dec 7',   home: true  },
+    { name: 'Edmonton Oilers',     date: 'Dec 10',  home: false },
+    { name: 'Toronto Maple Leafs', date: 'Dec 14',  home: true  },
+    { name: 'Ottawa Senators',     date: 'Dec 20',  home: false },
+  ];
+
+  function renderEventGrids() {
+    document.querySelectorAll('.event-grid[data-grid]').forEach(grid => {
+      grid.innerHTML = EVENTS.map(e => {
+        const prefix = e.home ? 'vs.' : '@';
+        const badge  = e.home
+          ? '<span class="home-badge">Home</span>'
+          : '<span class="away-badge">Away</span>';
+        return `
+          <div class="event-row checked">
+            <input type="checkbox" checked />
+            <span class="event-row-name">${prefix} ${e.name}</span>
+            <span class="event-row-date">${e.date}</span>
+            ${badge}
+          </div>`;
+      }).join('');
+
+      // Wire up individual row highlights
+      grid.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+        cb.addEventListener('change', () => {
+          cb.closest('.event-row').classList.toggle('checked', cb.checked);
+        });
+      });
+    });
+  }
+
+  renderEventGrids();
+
+  // ── Enable / disable activations ─────────────────────────
+  document.querySelectorAll('.yn-group').forEach(group => {
+    const [yesBtn, noBtn] = group.querySelectorAll('.yn-btn');
+    group.addEventListener('click', e => {
+      const btn = e.target.closest('.yn-btn');
+      if (!btn) return;
+      yesBtn.classList.remove('active');
+      noBtn.classList.remove('active');
+      btn.classList.add('active');
+      const activation = group.closest('.activation');
+      const isNo = btn === noBtn;
+      activation.classList.toggle('collapsed', isNo);
+      // Hide the "Add another" button that follows this activation when No
+      const addBtn = activation.nextElementSibling;
+      if (addBtn && addBtn.classList.contains('add-another')) {
+        addBtn.style.display = isNo ? 'none' : '';
+      }
+    });
+  });
+
+  // ── Location toggles ─────────────────────────────────────
+  document.querySelectorAll('.toggle-field .toggle').forEach(toggle => {
+    toggle.style.cursor = 'pointer';
+    toggle.addEventListener('click', () => toggle.classList.toggle('on'));
+  });
+
+  // ── Select All toggle ─────────────────────────────────────
+  document.querySelectorAll('.select-all-label input').forEach(selectAll => {
+    selectAll.addEventListener('change', () => {
+      const grid = selectAll.closest('.field').querySelector('.event-grid');
+      grid.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+        cb.checked = selectAll.checked;
+        cb.closest('.event-row').classList.toggle('checked', selectAll.checked);
+      });
+    });
+  });
+
+  // ── Add another activation ────────────────────────────────
+  // Track instance counts per type so we can label them correctly
+  const instanceCounts = {};
+
+  function wireActivation(activation) {
+    // yn-group toggle
+    const group = activation.querySelector('.yn-group');
+    if (group) {
+      const [yesBtn, noBtn] = group.querySelectorAll('.yn-btn');
+      group.addEventListener('click', e => {
+        const btn = e.target.closest('.yn-btn');
+        if (!btn) return;
+        yesBtn.classList.remove('active');
+        noBtn.classList.remove('active');
+        btn.classList.add('active');
+        const isNo = btn === noBtn;
+        activation.classList.toggle('collapsed', isNo);
+        const addBtn = activation.nextElementSibling;
+        if (addBtn && addBtn.classList.contains('add-another')) {
+          addBtn.style.display = isNo ? 'none' : '';
+        }
+      });
+    }
+    // event grids
+    activation.querySelectorAll('.event-grid[data-grid]').forEach(grid => {
+      grid.innerHTML = EVENTS.map(e => {
+        const prefix = e.home ? 'vs.' : '@';
+        const badge  = e.home
+          ? '<span class="home-badge">Home</span>'
+          : '<span class="away-badge">Away</span>';
+        return `<div class="event-row checked">
+            <input type="checkbox" checked />
+            <span class="event-row-name">${prefix} ${e.name}</span>
+            <span class="event-row-date">${e.date}</span>
+            ${badge}
+          </div>`;
+      }).join('');
+      grid.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+        cb.addEventListener('change', () => cb.closest('.event-row').classList.toggle('checked', cb.checked));
+      });
+    });
+    // select-all
+    activation.querySelectorAll('.select-all-label input').forEach(selectAll => {
+      selectAll.addEventListener('change', () => {
+        const grid = selectAll.closest('.field').querySelector('.event-grid');
+        grid.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+          cb.checked = selectAll.checked;
+          cb.closest('.event-row').classList.toggle('checked', cb.checked);
+        });
+      });
+    });
+  }
+
+  document.querySelectorAll('.add-another').forEach(btn => {
+    btn.onclick = () => {
+      // The activation to clone is the sibling .activation immediately before this button
+      const activation = btn.previousElementSibling;
+      if (!activation || !activation.classList.contains('activation')) return;
+
+      const typeId = activation.id;
+      instanceCounts[typeId] = (instanceCounts[typeId] || 1) + 1;
+      const count = instanceCounts[typeId];
+
+      const clone = activation.cloneNode(true);
+      clone.id = `${typeId}-${count}`;
+
+      // Update the "Activation Type X" label
+      const labelEl = clone.querySelector('.activation-label');
+      if (labelEl) {
+        const base = labelEl.textContent.replace(/ #\d+$/, '');
+        labelEl.textContent = `${base} #${count}`;
+        // also update the original to say #1 if this is the first clone
+        if (count === 2) {
+          const origLabel = activation.querySelector('.activation-label');
+          if (origLabel) origLabel.textContent = `${origLabel.textContent.replace(/ #\d+$/, '')} #1`;
+        }
+      }
+
+      // Make radio button names unique so groups don't cross-talk
+      clone.querySelectorAll('input[type="radio"]').forEach(r => {
+        if (r.name) r.name = `${r.name}-${count}`;
+      });
+
+      // Reset yn-btn to Yes active (collapsed state off)
+      clone.classList.remove('collapsed');
+      clone.querySelectorAll('.yn-btn').forEach((b, i) => {
+        b.classList.toggle('active', i === 0);
+      });
+
+      btn.before(clone);
+      wireActivation(clone);
+      setupCollapsibles(clone);
+    };
+  });
+
+  // ── Restore saved configuration on load ───────────────────
+  function restoreConfig() {
+    const raw = localStorage.getItem('blinkup_activations');
+    if (!raw) return;
+    let saved;
+    try { saved = JSON.parse(raw); } catch(e) { return; }
+
+    // Build a lookup: typeId → saved activation data
+    const savedMap = {};
+    saved.forEach(act => { savedMap[act.typeId] = act; });
+
+    document.querySelectorAll('.activation').forEach(el => {
+      const typeId = el.id.replace(/-\d+$/, '');
+      const act    = savedMap[typeId];
+
+      // If this activation wasn't saved, set it to No (collapsed)
+      if (!act) {
+        const [yesBtn, noBtn] = el.querySelectorAll('.yn-btn');
+        if (yesBtn && noBtn) {
+          yesBtn.classList.remove('active');
+          noBtn.classList.add('active');
+          el.classList.add('collapsed');
+          const addBtn = el.nextElementSibling;
+          if (addBtn && addBtn.classList.contains('add-another')) addBtn.style.display = 'none';
+        }
+        return;
+      }
+
+      // Restore name and prize
+      const sdkInputs = el.querySelectorAll('.sdk-callout input[type="text"]');
+      if (sdkInputs[0] && act.name)  sdkInputs[0].value = act.name;
+      if (sdkInputs[2] && act.prize) sdkInputs[2].value = act.prize;
+
+      // Restore trigger radios (botg + fotg): index 0 = manual, index 1 = scheduled
+      if (typeId === 'botg' || typeId === 'fotg') {
+        const triggerRadios = el.querySelectorAll('input[type="radio"][name*="trigger"]');
+        if (triggerRadios.length >= 2) {
+          triggerRadios[0].checked =  act.isInstant;
+          triggerRadios[1].checked = !act.isInstant;
+        }
+        if (!act.isInstant && act.scheduledTime) {
+          const dt = el.querySelector('input[type="datetime-local"]');
+          if (dt) dt.value = act.scheduledTime;
+        }
+      }
+
+      // Restore bar selection method (botg only)
+      if (typeId === 'botg' && act.barMethod) {
+        const barRadio = el.querySelector(`input[type="radio"][value="${act.barMethod}"]`);
+        if (barRadio) barRadio.checked = true;
+      }
+
+      // Restore fan selection method (fotg only)
+      if (typeId === 'fotg' && act.fanMethod) {
+        const fanRadio = el.querySelector(`input[type="radio"][value="${act.fanMethod}"]`);
+        if (fanRadio) fanRadio.checked = true;
+      }
+
+      // Restore eligible location toggles
+      if (act.eligibleStadium !== undefined || act.eligibleBars !== undefined) {
+        const toggles = el.querySelectorAll('.toggle-field .toggle');
+        if (toggles[0]) toggles[0].classList.toggle('on', act.eligibleStadium !== false);
+        if (toggles[1]) toggles[1].classList.toggle('on', act.eligibleBars !== false);
+      }
+
+      // Restore time-based winner qualification + eligible locations
+      if (typeId === 'time') {
+        const timeToggles = el.querySelectorAll('.toggle-field .toggle');
+        if (timeToggles[0]) timeToggles[0].classList.toggle('on', act.eligibleStadium !== false);
+        if (timeToggles[1]) timeToggles[1].classList.toggle('on', act.eligibleBars === true);
+
+        const timeRadios = el.querySelectorAll('input[type="radio"][name*="time-method"]');
+        if (act.winnerCount) {
+          if (timeRadios[0]) timeRadios[0].checked = true;
+          if (timeRadios[1]) timeRadios[1].checked = false;
+          const numInput = el.querySelector('input[type="number"]');
+          if (numInput) numInput.value = act.winnerCount;
+        } else {
+          if (timeRadios[0]) timeRadios[0].checked = false;
+          if (timeRadios[1]) timeRadios[1].checked = true;
+          if (act.scheduledTime) {
+            const dt = el.querySelector('input[type="datetime-local"]');
+            if (dt) dt.value = act.scheduledTime;
+          }
+        }
+      }
+    });
+  }
+
+  restoreConfig();
+
+  // ── Collapsible sections (SDK Display, Push Notifications, Events) ──
+  function setupCollapsibles(root) {
+    // SDK Display + Push Notifications callouts
+    root.querySelectorAll('.sdk-callout, .notif-callout, .sponsor-callout').forEach(el => {
+      const label = el.querySelector('.callout-label');
+      if (!label || label.classList.contains('collapsible-header')) return;
+      label.classList.add('collapsible-header');
+      el.classList.add('section-collapsed');
+      label.addEventListener('click', () => el.classList.toggle('section-collapsed'));
+    });
+
+    // Events section — find .field containing a section-divider with text "Events"
+    root.querySelectorAll('.field').forEach(field => {
+      const divider = field.querySelector('.section-divider');
+      if (!divider || divider.textContent.trim() !== 'Events') return;
+      if (divider.classList.contains('collapsible-header')) return;
+      field.classList.add('events-section', 'section-collapsed');
+      divider.classList.add('collapsible-header');
+      divider.addEventListener('click', () => field.classList.toggle('section-collapsed'));
+    });
+  }
+
+  // Run on all existing activations
+  document.querySelectorAll('.activation').forEach(setupCollapsibles);
+
+  // Also run when new activations are cloned — patch wireActivation
+  const _origWire = wireActivation;
+  // Already handled: call setupCollapsibles inside wireActivation
+</script>
+</body>
+</html>

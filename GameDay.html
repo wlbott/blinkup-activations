@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Game Day — bLinkup</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    color: #111;
+    background: #fff;
+    line-height: 1.5;
+  }
+
+  .topnav {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    padding: 0 32px;
+    border-bottom: 1px solid #e5e5e5;
+    height: 52px;
+    background: #fff;
+  }
+  .topnav-brand { font-weight: 700; font-size: 14px; color: #111; margin-right: 4px; }
+  .topnav a { color: #666; text-decoration: none; font-size: 13px; }
+  .topnav a:hover { color: #111; }
+  .topnav a.active { color: #111; font-weight: 600; }
+  .topnav-spacer { flex: 1; }
+  .btn-reset {
+    padding: 6px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #666;
+    background: #fff;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .btn-reset:hover { border-color: #999; color: #111; }
+
+  .page {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 48px 32px 80px;
+  }
+
+  .game-title { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
+  .game-meta  { font-size: 13px; color: #999; margin-bottom: 48px; }
+
+  .queue { display: flex; flex-direction: column; }
+
+  .queue-item {
+    padding: 20px 0;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .queue-item:last-child { border-bottom: none; }
+
+  .queue-item-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 18px;
+  }
+
+  /* Indicator */
+  .q-indicator {
+    width: 22px; height: 22px;
+    flex-shrink: 0; margin-top: 1px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+  }
+  .q-indicator.done   { color: #22c55e; }
+  .q-indicator.active { color: #111; font-size: 16px; }
+  .q-indicator.next   { color: #111; }
+
+  /* Body */
+  .q-body { flex: 1; }
+  .q-name { font-size: 15px; font-weight: 700; margin-bottom: 3px; color: #111; }
+  .q-name.done { color: #aaa; font-weight: 500; }
+  .q-hint { font-size: 13px; color: #666; }
+  .q-hint.done { color: #bbb; }
+  .q-meta { font-size: 12px; color: #aaa; margin-top: 4px; letter-spacing: 0.1px; }
+
+  /* Action */
+  .q-action { flex-shrink: 0; display: flex; align-items: center; gap: 10px; margin-top: 2px; }
+
+  .send-btn {
+    background: #111; color: #fff;
+    font-size: 13.5px; font-weight: 700;
+    padding: 8px 20px;
+    border: 1px solid #111; border-radius: 6px;
+    cursor: pointer; font-family: inherit; white-space: nowrap;
+  }
+  .send-btn:hover { background: #333; }
+
+  .time-label {
+    font-size: 13.5px; font-weight: 600; color: #888; white-space: nowrap;
+  }
+
+  .done-label { font-size: 13px; font-weight: 600; color: #22c55e; }
+
+  .q-eligible {
+    display: inline-flex; align-items: center; gap: 6px;
+    margin-top: 8px;
+    font-size: 13px; font-weight: 600; color: #111;
+    background: #f5f5f5; border-radius: 6px;
+    padding: 5px 12px;
+  }
+  .q-eligible-dot { width: 7px; height: 7px; background: #22c55e; border-radius: 50%; animation: pulse 2s infinite; }
+
+  .q-edit-row { margin-left: 40px; margin-top: 5px; }
+  .q-edit-link { font-size: 12px; color: #aaa; text-decoration: none; }
+  .q-edit-link:hover { color: #111; }
+
+  /* Expanded detail (Done items) */
+  .q-detail {
+    display: none;
+    margin-top: 14px;
+    margin-left: 40px;
+    padding: 14px 16px;
+    background: #fafafa;
+    border-radius: 7px;
+    border: 1px solid #f0f0f0;
+  }
+  .q-detail.open { display: block; }
+  .q-detail-row { display: flex; gap: 10px; font-size: 13px; margin-bottom: 8px; color: #555; }
+  .q-detail-row:last-child { margin-bottom: 0; }
+  .q-detail-label { font-weight: 600; color: #aaa; min-width: 90px; flex-shrink: 0; }
+  .toggle-detail {
+    font-size: 12px; color: #aaa; cursor: pointer;
+    margin-left: 40px; margin-top: 6px; display: inline-block;
+  }
+  .toggle-detail:hover { color: #555; }
+
+  /* Bar picker */
+  .bar-picker-wrap { margin-top: 14px; margin-left: 40px; }
+  .bar-picker {
+    border: 1px solid #e5e5e5; border-radius: 7px; overflow: hidden;
+  }
+  .bar-picker-row {
+    display: flex; align-items: center; gap: 14px;
+    padding: 10px 14px; border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+  }
+  .bar-picker-row:last-child { border-bottom: none; }
+  .bar-picker-row:hover { background: #f9f9f9; }
+  .bar-picker-row.selected { background: #f0fdf4; }
+  .bar-picker-check { color: #22c55e; font-size: 14px; font-weight: 700; width: 16px; text-align: center; }
+  .bar-picker-info { flex: 1; }
+  .bar-picker-name { font-size: 13.5px; font-weight: 600; color: #111; }
+  .bar-picker-addr { font-size: 12px; color: #aaa; margin-top: 1px; }
+  .bar-picker-count { font-size: 14px; font-weight: 700; color: #111; white-space: nowrap; }
+  .bar-picker-count span { font-size: 11px; font-weight: 400; color: #aaa; margin-left: 2px; }
+
+  .bar-send-row { margin-top: 10px; }
+
+  .reroll-btn {
+    background: none; color: #888;
+    font-size: 13px; font-weight: 500;
+    padding: 8px 0;
+    border: none; cursor: pointer; font-family: inherit;
+  }
+  .reroll-btn:hover { color: #111; }
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <span class="topnav-brand">Blinkup Connect SDK</span>
+  <a href="#">Settings</a>
+  <a href="#">Events</a>
+  <a href="#">Spots</a>
+  <a href="ActivationBuilder.html">Activations</a>
+  <a href="#" class="active">Game Day</a>
+  <div class="topnav-spacer"></div>
+  <button class="btn-reset" onclick="resetDashboard()">Reset</button>
+</nav>
+
+<div class="page">
+
+  <div class="game-title">Sabres vs. Toronto Maple Leafs</div>
+  <div class="game-meta">KeyBank Center · Oct 10, 2025 · 7:00 PM ET</div>
+
+  <div id="no-config" style="display:none;padding:32px 0;color:#aaa;font-size:14px;">
+    No activations configured yet. <a href="ActivationBuilder.html" style="color:#111;font-weight:600;">Open Activation Builder →</a>
+  </div>
+
+  <div class="queue" id="queue">
+
+  </div>
+</div>
+
+<script>
+  // Force a fresh load when coming back via browser back button
+  window.addEventListener('pageshow', e => { if (e.persisted) location.reload(); });
+
+  const BARS = [
+    { name: 'Forty Thieves',        addr: '727 Elmwood Ave',      fans: 48 },
+    { name: 'Sports City Pizza Pub', addr: '1407 Niagara St',     fans: 35 },
+    { name: 'Amherst Ale House',    addr: '55 Crosspoint Pkwy',   fans: 29 },
+    { name: 'The Grill at the Dome', addr: '175 Brompton Rd',     fans: 23 },
+    { name: '716 Food and Sport',   addr: '149 Scott St',         fans: 18 },
+    { name: 'Dunn Tire Park Bar',   addr: 'Coca-Cola Field',      fans: 11 },
+  ];
+
+  const FANS = [
+    { name: 'Marcus T.',   location: 'KeyBank Center',      invites: 14, redemptions: 8 },
+    { name: 'Sarah K.',    location: 'Forty Thieves',        invites: 11, redemptions: 5 },
+    { name: 'Devon R.',    location: 'KeyBank Center',      invites:  9, redemptions: 7 },
+    { name: 'Alyssa M.',   location: 'Sports City Pizza Pub', invites: 7, redemptions: 9 },
+    { name: 'Jordan B.',   location: 'KeyBank Center',      invites:  6, redemptions: 3 },
+    { name: 'Chris W.',    location: 'Amherst Ale House',   invites:  4, redemptions: 6 },
+    { name: 'Taylor N.',   location: 'KeyBank Center',      invites:  3, redemptions: 2 },
+    { name: 'Priya S.',    location: '716 Food and Sport',  invites:  2, redemptions: 4 },
+  ];
+
+  // ── Load saved activations or fall back to demo ───────────
+  const DEMO = [
+    { id: 'time',  typeId: 'time',  name: 'Early Arrival Deal',   prize: 'Free Labatt Blue Draft',    isInstant: true,  scheduledTime: null, winnerCount: 100, eligibleStadium: true, eligibleBars: false },
+    { id: 'stat',  typeId: 'stat',  name: 'Power Play Deal',       prize: '$3 Labatt Blue Draft',      isInstant: true,  scheduledTime: null },
+    { id: 'botg',  typeId: 'botg',  name: 'Bar of the Game',       prize: 'Free Round of Labatt Blue', isInstant: true,  scheduledTime: null, barMethod: 'manual' },
+    { id: 'fotg',  typeId: 'fotg',  name: 'Fan of the Game',        prize: '$100 Labatt Blue Bar Tab',  isInstant: true,  scheduledTime: null,              fanMethod: 'random' },
+    { id: 'fotg2', typeId: 'fotg',  name: 'Fan of the 3rd Period', prize: '$100 Labatt Blue Bar Tab',  isInstant: false, scheduledTime: '2025-10-10T21:45', fanMethod: 'invitations' },
+  ];
+
+  let activations;
+  try {
+    const raw = localStorage.getItem('blinkup_activations');
+    activations = raw ? JSON.parse(raw) : DEMO;
+  } catch(e) { activations = DEMO; }
+
+  if (!activations || activations.length === 0) {
+    document.getElementById('no-config').style.display = 'block';
+  }
+
+  // ── Format a datetime string → human-readable time ────────
+  function fmtTime(dtStr) {
+    if (!dtStr) return null;
+    const d = new Date(dtStr);
+    if (isNaN(d)) return null;
+    return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  }
+
+  function secsUntil(dtStr) {
+    if (!dtStr) return null;
+    const diff = Math.floor((new Date(dtStr) - Date.now()) / 1000);
+    return diff > 0 ? diff : null;
+  }
+
+  // ── Render queue ──────────────────────────────────────────
+  const queue = document.getElementById('queue');
+  const countdowns = [];
+  const selectedBars = {};
+  const selectedFans = {};
+
+  function qualifiersFor(act, displayTime) {
+    const parts = [];
+    const isBar = act.typeId === 'botg' || (act.id && act.id.startsWith('botg'));
+
+    if (isBar) {
+      const method = { manual: 'Manually selected', usage: 'Usage-based', random: 'Random' }[act.barMethod] || 'Random';
+      parts.push(method);
+      parts.push(act.isInstant ? 'Manual' : (displayTime || 'Scheduled'));
+    } else if (act.typeId === 'stat') {
+      parts.push('Manual push');
+    } else if (act.typeId === 'fotg') {
+      const fanLabel = { random: 'Random draw', invitations: 'Most invitations', redemptions: 'Most redemptions' }[act.fanMethod] || 'Random draw';
+      parts.push(fanLabel);
+      parts.push(act.isInstant ? 'Manual' : (displayTime || 'Scheduled'));
+    } else if (act.typeId === 'time') {
+      if (act.winnerCount) parts.push(`First ${act.winnerCount} fans`);
+      else                 parts.push(displayTime ? `Before ${displayTime}` : 'Time-based');
+    }
+
+    if (act.prize) parts.push(act.prize);
+    return parts.join(' · ');
+  }
+
+  function hintFor(act, displayTime) {
+    const isBar = act.typeId === 'botg' || (act.id && act.id.startsWith('botg'));
+    if (act.typeId === 'time' && act.winnerCount)  return `Send when first ${act.winnerCount} fans have checked in`;
+    const verb = act.typeId === 'fotg' ? 'Draws' : 'Starts';
+    if (!act.isInstant && displayTime)             return `${verb} automatically at ${displayTime}`;
+    if (!act.isInstant)                            return `${verb} automatically`;
+    if (isBar && act.barMethod === 'manual')       return 'Select a bar from the list, then send';
+    if (isBar && act.barMethod === 'usage')        return 'Top bar by check-ins pre-selected — confirm and send';
+    if (isBar)                                     return 'Bar chosen randomly — send when ready';
+    if (act.typeId === 'fotg' && act.fanMethod === 'random')      return 'Fan chosen randomly — confirm or choose again';
+    if (act.typeId === 'fotg' && act.fanMethod === 'invitations') return 'Top fan by invitations sent — confirm and send';
+    if (act.typeId === 'fotg' && act.fanMethod === 'redemptions') return 'Top fan by deals redeemed — confirm and send';
+    return 'Send manually when ready';
+  }
+
+  activations.forEach((act, i) => {
+    const isBar = act.typeId === 'botg' || (act.id && act.id.startsWith('botg'));
+    const safeId = `act-${i}`;
+    const displayTime = fmtTime(act.scheduledTime);
+    const remainSecs  = secsUntil(act.scheduledTime);
+    const hint        = hintFor(act, displayTime);
+    const meta        = qualifiersFor(act, displayTime);
+
+    let actionHTML = '';
+    let extraHTML  = '';
+
+    if (!act.isInstant) {
+      const verb = act.typeId === 'fotg' ? 'Draws' : 'Starts';
+      const label = remainSecs
+        ? `${verb} in ${Math.floor(remainSecs/60)}:${String(remainSecs%60).padStart(2,'0')}`
+        : (displayTime ? `${verb} at ${displayTime}` : `${verb} automatically`);
+      actionHTML = `<span class="time-label" id="cd-${safeId}">${label}</span>`;
+      if (remainSecs) countdowns.push({ id: `cd-${safeId}`, secs: remainSecs, isFotg: act.typeId === 'fotg' });
+    } else if (isBar) {
+      actionHTML = `<button class="send-btn" onclick="openBarPicker('${safeId}', '${act.name.replace(/'/g,"\\'")}')">Select</button>`;
+      extraHTML  = barPickerHTML(safeId, act.name, act.barMethod || 'random');
+    } else if (act.typeId === 'fotg') {
+      actionHTML = `<button class="send-btn" onclick="openFanPicker('${safeId}')">Select</button>`;
+      extraHTML  = fanPickerHTML(safeId, act.name, act.fanMethod || 'random');
+    } else {
+      actionHTML = `<button class="send-btn" onclick="sendItem('${safeId}', '${act.name.replace(/'/g,"\\'")}')">Send</button>`;
+    }
+
+    const item = document.createElement('div');
+    item.className = 'queue-item';
+    item.id = `item-${safeId}`;
+    const showEligible = act.typeId === 'stat' || act.typeId === 'time';
+    let eligibleHTML = '';
+    if (showEligible) {
+      const stadiumPill = act.eligibleStadium !== false ? `<span class="q-eligible"><span class="q-eligible-dot"></span>212 in stadium</span>` : '';
+      const barPill     = act.eligibleBars === true    ? `<span class="q-eligible"><span class="q-eligible-dot"></span>135 at bars</span>`    : '';
+      const capPill     = act.winnerCount ? `<span class="q-eligible" style="background:#fff7ed;border-color:#fed7aa;color:#c2410c;"><span class="q-eligible-dot" style="background:#f97316;animation:none;"></span>cap: ${act.winnerCount}</span>` : '';
+      eligibleHTML = `<div style="display:flex;gap:8px;margin-top:8px;">${stadiumPill}${barPill}${capPill}</div>`;
+    }
+
+    item.innerHTML = `
+      <div class="queue-item-row">
+        <div class="q-indicator next">→</div>
+        <div class="q-body">
+          <div class="q-name">${act.name}</div>
+          <div class="q-meta">${meta}</div>
+          <div class="q-hint" style="margin-top:4px;">${hint}</div>
+          ${eligibleHTML}
+        </div>
+        <div class="q-action" id="action-${safeId}">${actionHTML}</div>
+      </div>
+      <div class="q-edit-row">
+        <a class="q-edit-link" href="ActivationBuilder.html">Edit ↗</a>
+      </div>
+      ${extraHTML}`;
+    queue.appendChild(item);
+  });
+
+  // ── Countdown tickers ─────────────────────────────────────
+  countdowns.forEach(cd => {
+    let s = cd.secs;
+    const verb = cd.isFotg ? 'Draws' : 'Starts';
+    const el = () => document.getElementById(cd.id);
+    const t = setInterval(() => {
+      s--;
+      if (s <= 0) { clearInterval(t); if (el()) el().textContent = `${verb} now`; return; }
+      const m = Math.floor(s / 60);
+      const ss = String(s % 60).padStart(2, '0');
+      if (el()) el().textContent = `${verb} in ${m}:${ss}`;
+    }, 1000);
+  });
+
+  // ── Bar picker HTML ────────────────────────────────────────
+  function barPickerHTML(safeId, name, barMethod) {
+    const sorted = (barMethod === 'usage') ? [...BARS].sort((a, b) => b.fans - a.fans) : BARS;
+
+    // For random: pick one at random upfront
+    let prePickIdx = null;
+    if (barMethod === 'random') {
+      prePickIdx = Math.floor(Math.random() * sorted.length);
+      selectedBars[safeId] = sorted[prePickIdx].name;
+    } else if (barMethod === 'usage') {
+      prePickIdx = 0;
+      selectedBars[safeId] = sorted[0].name;
+    }
+
+    const rows = sorted.map((b, idx) => {
+      const pre = prePickIdx !== null && idx === prePickIdx;
+      return `
+      <div class="bar-picker-row${pre ? ' selected' : ''}" onclick="selectBar(this, '${b.name.replace(/'/g,"\\'")}', '${safeId}')">
+        <div class="bar-picker-check">${pre ? '✓' : ''}</div>
+        <div class="bar-picker-info">
+          <div class="bar-picker-name">${b.name}</div>
+          <div class="bar-picker-addr">${b.addr}</div>
+        </div>
+        <div class="bar-picker-count">${b.fans} <span>fans</span></div>
+      </div>`;
+    }).join('');
+
+    const hasPrePick = prePickIdx !== null;
+    const btnStyle   = hasPrePick ? '' : 'opacity:0.3;pointer-events:none;';
+    const rerollBtn  = barMethod === 'random'
+      ? `<button class="reroll-btn" onclick="rerollBar('${safeId}')">Choose again</button>`
+      : '';
+
+    return `<div class="bar-picker-wrap" id="picker-${safeId}" style="display:none;">
+      <div class="bar-picker" id="barlist-${safeId}">${rows}</div>
+      <div class="bar-send-row" style="display:flex;gap:10px;align-items:center;">
+        <button class="send-btn" id="btn-${safeId}" onclick="sendBar('${safeId}', '${name.replace(/'/g,"\\'")}')"\
+          style="${btnStyle}">Send Bar of the Game</button>
+        ${rerollBtn}
+      </div>
+    </div>`;
+  }
+
+  // ── Fan picker HTML ────────────────────────────────────────
+  function fanPickerHTML(safeId, name, fanMethod) {
+    const isBehavior = fanMethod === 'invitations' || fanMethod === 'redemptions';
+    const metricKey  = fanMethod === 'invitations' ? 'invites' : 'redemptions';
+    const metricLabel = fanMethod === 'invitations' ? 'invites' : 'redemptions';
+
+    const sorted = isBehavior
+      ? [...FANS].sort((a, b) => b[metricKey] - a[metricKey])
+      : FANS;
+
+    let prePickIdx = null;
+    if (fanMethod === 'random') {
+      prePickIdx = Math.floor(Math.random() * sorted.length);
+      selectedFans[safeId] = sorted[prePickIdx].name;
+    } else if (isBehavior) {
+      prePickIdx = 0;
+      selectedFans[safeId] = sorted[0].name;
+    }
+
+    const rows = sorted.map((f, idx) => {
+      const pre = prePickIdx !== null && idx === prePickIdx;
+      const metric = isBehavior
+        ? `<div class="bar-picker-count">${f[metricKey]} <span>${metricLabel}</span></div>`
+        : `<div class="bar-picker-addr" style="margin-top:0;">${f.location}</div>`;
+      return `
+      <div class="bar-picker-row${pre ? ' selected' : ''}" onclick="selectFan(this, '${f.name.replace(/'/g,"\\'")}', '${safeId}')">
+        <div class="bar-picker-check">${pre ? '✓' : ''}</div>
+        <div class="bar-picker-info">
+          <div class="bar-picker-name">${f.name}</div>
+          ${!isBehavior ? `<div class="bar-picker-addr">${f.location}</div>` : ''}
+        </div>
+        ${isBehavior ? `<div class="bar-picker-count">${f[metricKey]} <span>${metricLabel}</span></div>` : ''}
+      </div>`;
+    }).join('');
+
+    const btnStyle  = prePickIdx !== null ? '' : 'opacity:0.3;pointer-events:none;';
+    const rerollBtn = fanMethod === 'random'
+      ? `<button class="reroll-btn" onclick="rerollFan('${safeId}')">Choose again</button>`
+      : '';
+
+    return `<div class="bar-picker-wrap" id="fanpicker-${safeId}" style="display:none;">
+      <div class="bar-picker" id="fanlist-${safeId}">${rows}</div>
+      <div class="bar-send-row" style="display:flex;gap:10px;align-items:center;">
+        <button class="send-btn" id="fanbtn-${safeId}" onclick="sendFan('${safeId}', '${name.replace(/'/g,"\\'")}')"\
+          style="${btnStyle}">Send Fan of the Game</button>
+        ${rerollBtn}
+      </div>
+    </div>`;
+  }
+
+  // ── Re-roll random fan selection ──────────────────────────
+  function rerollFan(safeId) {
+    const list = document.getElementById(`fanlist-${safeId}`);
+    const rows = list.querySelectorAll('.bar-picker-row');
+    const newIdx = Math.floor(Math.random() * rows.length);
+    rows.forEach((r, i) => {
+      const isNew = i === newIdx;
+      r.classList.toggle('selected', isNew);
+      r.querySelector('.bar-picker-check').textContent = isNew ? '✓' : '';
+      if (isNew) selectedFans[safeId] = r.querySelector('.bar-picker-name').textContent;
+    });
+  }
+
+  // ── Re-roll random selection ───────────────────────────────
+  function rerollBar(safeId) {
+    const list = document.getElementById(`barlist-${safeId}`);
+    const rows = list.querySelectorAll('.bar-picker-row');
+    const newIdx = Math.floor(Math.random() * rows.length);
+    rows.forEach((r, i) => {
+      const isNew = i === newIdx;
+      r.classList.toggle('selected', isNew);
+      r.querySelector('.bar-picker-check').textContent = isNew ? '✓' : '';
+      if (isNew) selectedBars[safeId] = r.querySelector('.bar-picker-name').textContent;
+    });
+  }
+
+  // ── Actions ────────────────────────────────────────────────
+  function markDone(safeId, hintText) {
+    const item = document.getElementById(`item-${safeId}`);
+    if (!item) return;
+    item.querySelector('.q-indicator').className = 'q-indicator done';
+    item.querySelector('.q-indicator').textContent = '✓';
+    item.querySelector('.q-name').classList.add('done');
+    const hint = item.querySelector('.q-hint');
+    hint.classList.add('done');
+    hint.textContent = hintText;
+    document.getElementById(`action-${safeId}`).innerHTML = '<span class="done-label">Done</span>';
+    const picker = document.getElementById(`picker-${safeId}`);
+    if (picker) picker.style.display = 'none';
+    const fanPicker = document.getElementById(`fanpicker-${safeId}`);
+    if (fanPicker) fanPicker.style.display = 'none';
+    const editRow = item.querySelector('.q-edit-row');
+    if (editRow) editRow.style.display = 'none';
+  }
+
+  function sendItem(safeId, label) {
+    if (!confirm(`Send "${label}" now?`)) return;
+    markDone(safeId, 'Sent');
+  }
+
+  function openBarPicker(safeId) {
+    document.getElementById(`picker-${safeId}`).style.display = 'block';
+    document.getElementById(`action-${safeId}`).innerHTML = '';
+  }
+
+  function openFanPicker(safeId) {
+    document.getElementById(`fanpicker-${safeId}`).style.display = 'block';
+    document.getElementById(`action-${safeId}`).innerHTML = '';
+  }
+
+  function selectFan(row, name, safeId) {
+    const wrap = document.getElementById(`fanpicker-${safeId}`);
+    wrap.querySelectorAll('.bar-picker-row').forEach(r => {
+      r.classList.remove('selected');
+      r.querySelector('.bar-picker-check').textContent = '';
+    });
+    row.classList.add('selected');
+    row.querySelector('.bar-picker-check').textContent = '✓';
+    selectedFans[safeId] = name;
+    const btn = document.getElementById(`fanbtn-${safeId}`);
+    btn.style.opacity = '1';
+    btn.style.pointerEvents = 'auto';
+  }
+
+  function sendFan(safeId, label) {
+    const fan = selectedFans[safeId];
+    if (!fan) return;
+    if (!confirm(`Send "${label}" to ${fan}?`)) return;
+    markDone(safeId, `Sent — ${fan}`);
+    delete selectedFans[safeId];
+  }
+
+  function selectBar(row, name, safeId) {
+    const wrap = document.getElementById(`picker-${safeId}`);
+    wrap.querySelectorAll('.bar-picker-row').forEach(r => {
+      r.classList.remove('selected');
+      r.querySelector('.bar-picker-check').textContent = '';
+    });
+    row.classList.add('selected');
+    row.querySelector('.bar-picker-check').textContent = '✓';
+    selectedBars[safeId] = name;
+    const btn = document.getElementById(`btn-${safeId}`);
+    btn.style.opacity = '1';
+    btn.style.pointerEvents = 'auto';
+  }
+
+  function sendBar(safeId, label) {
+    const bar = selectedBars[safeId];
+    if (!bar) return;
+    if (!confirm(`Send "${label}" for ${bar}?`)) return;
+    markDone(safeId, `Sent — ${bar}`);
+    delete selectedBars[safeId];
+  }
+
+  // Reset
+  function resetDashboard() {
+    if (!confirm('Reset this game day session?')) return;
+    location.reload();
+  }
+</script>
+</body>
+</html>
